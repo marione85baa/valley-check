@@ -156,11 +156,21 @@
   .verdict-card .v-desc { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 460px; margin: 0 auto; }
   .valley-stamp { margin-top: 14px; font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--sand); opacity: 0.6; text-transform: uppercase; }
 
-  .cross-check-box { background: var(--night3); border-top: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; }
-  .cross-check-box .cc-info { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+  /* Effetto Lampeggiante Rosso per il Blocco */
+  @keyframes flashRed {
+    0% { background: rgba(232, 64, 64, 0.2); border-color: rgba(232, 64, 64, 0.5); }
+    50% { background: rgba(232, 64, 64, 0.7); border-color: rgba(232, 64, 64, 1); box-shadow: 0 0 20px rgba(232, 64, 64, 0.6); }
+    100% { background: rgba(232, 64, 64, 0.2); border-color: rgba(232, 64, 64, 0.5); }
+  }
 
   .status-msg { font-family: var(--mono); font-size: 13px; color: var(--muted); padding: 28px; text-align: center; background: var(--night2); border: 1px solid var(--border); border-radius: 12px; }
-  .status-msg.error { color: var(--danger); }
+  .status-msg.error { 
+    color: #fff; 
+    font-weight: bold;
+    animation: flashRed 1.2s infinite ease-in-out;
+    border: 2px solid var(--danger);
+  }
+
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
@@ -197,7 +207,7 @@
     <div class="input-group">
       <label class="search-label">
         <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Discord Logo"> 
-        Discord ID Utente
+        ID Discord Utente
       </label>
       <input type="text" id="discordInput" placeholder="Es. 123456789012345678" maxlength="20" />
     </div>
@@ -290,21 +300,33 @@ async function doCompleteCheck() {
     const b = banData.players[0];
     if (!p) throw new Error('Profilo Steam non trovato.');
 
+    const DISCORD_EPOCH = 1420070400000n;
+    const discordTimestamp = Number((BigInt(rawDiscord) >> 22n) + DISCORD_EPOCH);
+    const discordDate = new Date(discordTimestamp);
+    
+    const steamCreatedDate = p.timecreated ? new Date(p.timecreated * 1000) : null;
+
+    // --- CONTROLLO BLOCCANTE COERENZA ACCOUNT ---
+    if (steamCreatedDate) {
+      const diffDays = (discordDate.getTime() - steamCreatedDate.getTime()) / (1000 * 60 * 60 * 24);
+      
+      // Se l'account Discord è recente ma Steam è molto vecchio (gap > 3 anni)
+      if (diffDays > 1095) {
+        throw new Error('⚠ ATTENZIONE: Steam molto vecchio ma Discord recente.');
+      }
+    }
+
     let games = null;
     try {
       const gdRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${API_KEY}&steamid=${sid}&include_appinfo=1&include_played_free_games=1&format=json`)}`);
       const gd = await gdRes.json();
       games = gd.response.games || [];
     } catch(e) {}
-
-    const DISCORD_EPOCH = 1420070400000n;
-    const discordTimestamp = Number((BigInt(rawDiscord) >> 22n) + DISCORD_EPOCH);
-    const discordDate = new Date(discordTimestamp);
     
     renderResults(p, b, games, sid, discordDate, rawDiscord);
 
   } catch(e) {
-    showMsg('❌ Errore: ' + e.message, true);
+    showMsg(e.message, true);
   }
 
   if (btn) btn.disabled = false;
@@ -347,25 +369,11 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
   const cfxSearchUrl = `https://forum.cfx.re/search?q=${hexId}`;
   const steamIdIoUrl = `https://steamid.io/lookup/${sid}`;
 
-  let crossCheckHtml = '';
-  if (steamCreatedDate) {
-    const steamTimestampSec = steamCreatedDate.getTime();
-    const diffDays = Math.abs(discordDate.getTime() - steamTimestampSec) / (1000 * 60 * 60 * 24);
-    
-    if (diffDays > 1095 && discordDate.getTime() > steamTimestampSec) {
-      crossCheckHtml = `
-        <div class="cross-check-box" style="border-left: 3px solid var(--danger);">
-          <div><strong>⚠ Allerta Multi-Account:</strong> Steam molto vecchio ma Discord recente. Possibile alt/acquisto.</div>
-          <div class="cc-info">Gap: > 3 anni</div>
-        </div>`;
-    } else {
-      crossCheckHtml = `
-        <div class="cross-check-box" style="border-left: 3px solid var(--ok);">
-          <div><strong>✓ Controllo Incrociato:</strong> Coerenza account OK (nessuna discrepanza critica).</div>
-          <div class="cc-info">Allineato</div>
-        </div>`;
-    }
-  }
+  const crossCheckHtml = `
+    <div class="cross-check-box" style="border-left: 3px solid var(--ok);">
+      <div><strong>✓ Controllo Incrociato:</strong> Coerenza account OK (nessuna discrepanza critica).</div>
+      <div class="cc-info">Allineato</div>
+    </div>`;
 
   let verdict = { title: 'PROFILO PULITO', desc: 'Nessun ban rilevato e account regolari.', cls: 'ok' };
   if (hasBan) {
@@ -404,7 +412,7 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
     <div class="card">
       <div class="section-title">Analisi Dettagliata Account Discord</div>
       <div class="stat-grid">
-        <div class="stat-cell" style="grid-column: span 2"><div class="stat-label">Discord ID Utente</div><div class="stat-value" style="font-size:13px; font-family:var(--mono)">${discordId}</div></div>
+        <div class="stat-cell" style="grid-column: span 2"><div class="stat-label">ID Discord Utente</div><div class="stat-value" style="font-size:13px; font-family:var(--mono)">${discordId}</div></div>
         <div class="stat-cell"><div class="stat-label">Età Account</div><div class="stat-value ${discordAgeWarn?'warn':'ok'}" style="font-size:13px">${discordAgeText}</div></div>
         <div class="stat-cell">
           <div class="stat-label">Azione Rapida</div>
