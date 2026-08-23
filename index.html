@@ -14,10 +14,10 @@
     --gold:      #e8a832;
     --gold-dark: #b37a10;
     --wood:      #4a2e18;
-    --night:     #0c151d;
-    --night2:    #14222e;
-    --night3:    #1c2e3f;
-    --border:    #2a4359;
+    --night:     #080d12;
+    --night2:    #0f1721;
+    --night3:    #15222f;
+    --border:    #22384b;
     --danger:    #e84040;
     --warn:      #e8a832;
     --ok:        #4ec97b;
@@ -38,102 +38,109 @@
     flex-direction: column;
     align-items: center;
     padding: 0 16px 80px;
-    background-image: radial-gradient(circle at 50% 0%, #1a3247 0%, var(--night) 70%);
+    background-image: radial-gradient(circle at 50% 0%, #15293d 0%, var(--night) 75%);
   }
 
   #mainContent { width: 100%; display: flex; flex-direction: column; align-items: center; }
 
-  .hero { width: 100%; max-width: 700px; text-align: center; padding: 48px 24px 32px; }
+  .hero { width: 100%; max-width: 680px; text-align: center; padding: 40px 24px 24px; display: flex; flex-direction: column; align-items: center; }
+  
+  .logo-img {
+    max-width: 280px;
+    height: auto;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+  }
+
   .badge {
     display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
-    color: var(--sand); border: 1px solid rgba(212,163,89,0.4); background: rgba(212,163,89,0.08);
-    border-radius: 20px; padding: 6px 18px; margin-bottom: 18px; text-transform: uppercase;
+    color: var(--sand); border: 1px solid rgba(212,163,89,0.3); background: rgba(212,163,89,0.06);
+    border-radius: 20px; padding: 5px 16px; margin-bottom: 14px; text-transform: uppercase;
   }
-  .hero h1 { font-family: var(--serif); font-size: clamp(32px, 6vw, 52px); font-weight: 900; line-height: 1.05; color: #fff; margin-bottom: 6px; }
-  .hero h1 .valley { color: var(--gold); }
-  .hero .sub { font-family: var(--mono); font-size: 12px; letter-spacing: 2px; color: var(--sky); margin-bottom: 14px; text-transform: uppercase; }
-  .hero p { font-size: 14px; color: var(--muted); max-width: 440px; margin: 0 auto; line-height: 1.6; }
+  .hero p { font-size: 13px; color: var(--muted); max-width: 440px; margin: 0 auto; line-height: 1.6; }
 
   .api-notice {
-    width: 100%; max-width: 640px; background: rgba(74,163,223,0.05); border: 1px solid rgba(74,163,223,0.2);
-    border-radius: 10px; padding: 16px 20px; font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 24px;
+    width: 100%; max-width: 640px; background: rgba(74,163,223,0.04); border: 1px solid rgba(74,163,223,0.15);
+    border-radius: 10px; padding: 14px 18px; font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 20px;
   }
   .api-notice strong { color: var(--sky); }
   .api-notice a { color: var(--gold); text-decoration: none; }
-  .api-key-row { display: flex; gap: 8px; margin-top: 10px; }
+  .api-key-row { display: flex; gap: 8px; margin-top: 8px; }
   .api-key-row input {
     flex: 1; background: var(--night); border: 1px solid var(--border); border-radius: 6px;
-    padding: 8px 12px; font-family: var(--mono); font-size: 12px; color: var(--text); outline: none;
+    padding: 7px 12px; font-family: var(--mono); font-size: 12px; color: var(--text); outline: none;
   }
   .api-key-row button {
-    background: var(--sky-dark); border: none; border-radius: 6px; padding: 8px 16px;
+    background: var(--sky-dark); border: none; border-radius: 6px; padding: 7px 14px;
     font-size: 12px; font-weight: 600; color: #fff; cursor: pointer; transition: background 0.2s;
   }
   .api-key-row button:hover { background: var(--sky); }
 
   .checker-box {
     width: 100%; max-width: 640px; background: var(--night2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px;
+    border-radius: 12px; padding: 22px; display: flex; flex-direction: column; gap: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   }
   .input-group { display: flex; flex-direction: column; gap: 6px; }
-  .search-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
-  .search-label img { width: 16px; height: 16px; object-fit: contain; }
+  .search-label { font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; color: var(--text); text-transform: uppercase; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  .search-label img { width: 18px; height: 18px; object-fit: contain; }
   
   .checker-box input {
     width: 100%; background: var(--night); border: 1px solid var(--border); border-radius: 8px;
-    padding: 12px 16px; font-family: var(--mono); font-size: 13px; color: var(--text); outline: none;
+    padding: 12px 14px; font-family: var(--mono); font-size: 13px; color: var(--text); outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .checker-box input:focus { border-color: var(--sand); }
+  .checker-box input:focus { border-color: var(--sand); box-shadow: 0 0 0 3px rgba(212,163,89,0.15); }
   
   .run-btn {
     background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
-    border: none; border-radius: 8px; padding: 14px 26px; font-size: 14px; font-weight: 600;
-    color: var(--wood); cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px;
-    transition: filter 0.2s; margin-top: 4px;
+    border: none; border-radius: 8px; padding: 13px 24px; font-size: 13px; font-weight: 600;
+    color: var(--wood); cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 1.5px;
+    transition: filter 0.2s, transform 0.1s; margin-top: 4px;
   }
   .run-btn:hover { filter: brightness(1.1); }
-  .run-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .run-btn:active { transform: scale(0.99); }
+  .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   #result { width: 100%; max-width: 680px; margin-top: 20px; }
-  .card { background: var(--night2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+  .card { background: var(--night2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
   .card-accent { border-top: 2px solid var(--gold); }
   .profile-header { display: flex; align-items: center; gap: 20px; padding: 22px 24px; border-bottom: 1px solid var(--border); }
   .avatar-wrap img { width: 68px; height: 68px; border-radius: 8px; border: 2px solid var(--gold); }
   .profile-info h2 { font-family: var(--serif); font-size: 20px; color: #fff; margin-bottom: 4px; }
   .profile-info .steamid { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 5px; }
   .profile-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-  .profile-links a { font-family: var(--mono); font-size: 11px; color: var(--sky); text-decoration: none; background: rgba(74,163,223,0.08); border: 1px solid rgba(74,163,223,0.2); padding: 6px 12px; border-radius: 4px; transition: background 0.2s; }
+  .profile-links a { font-family: var(--mono); font-size: 11px; color: var(--sky); text-decoration: none; background: rgba(74,163,223,0.08); border: 1px solid rgba(74,163,223,0.2); padding: 5px 10px; border-radius: 4px; transition: background 0.2s; }
   .profile-links a:hover { background: rgba(74,163,223,0.2); }
 
   .section-title { font-family: var(--mono); font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--sand); padding: 14px 24px 6px; }
   .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
-  .stat-cell { padding: 14px 22px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .stat-cell { padding: 14px 20px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
   .stat-cell:last-child { border-right: none; }
   .stat-label { font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-  .stat-value { font-size: 16px; font-weight: 700; color: #fff; }
+  .stat-value { font-size: 15px; font-weight: 700; color: #fff; }
   .stat-value.danger { color: var(--danger); }
   .stat-value.warn   { color: var(--warn);   }
   .stat-value.ok     { color: var(--ok);     }
 
   .ban-alert { margin: 0 24px 20px; border-radius: 8px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; font-size: 13px; line-height: 1.6; }
   .ban-alert.warn { background: rgba(232,168,50,0.08); border: 1px solid rgba(232,168,50,0.25); color: #f0c060; }
-  .ban-alert.danger { background: rgba(232,64,64,0.08); border: 1px solid rgba(232,64,64,0.3); color: #f07070; }
-
-  .verdict-card { border-radius: 12px; padding: 28px 24px; text-align: center; }
+  
+  .verdict-card { border-radius: 12px; padding: 26px 24px; text-align: center; }
   .verdict-card.danger { background: rgba(232,64,64,0.08); border: 1px solid rgba(232,64,64,0.3); }
   .verdict-card.warn   { background: rgba(232,168,50,0.07); border: 1px solid rgba(232,168,50,0.28); }
   .verdict-card.ok     { background: rgba(78,201,123,0.06); border: 1px solid rgba(78,201,123,0.25); }
-  .verdict-card .v-title { font-family: var(--serif); font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .verdict-card .v-title { font-family: var(--serif); font-size: 20px; font-weight: 700; margin-bottom: 6px; }
   .verdict-card.danger .v-title { color: var(--danger); }
   .verdict-card.warn   .v-title { color: var(--warn);   }
   .verdict-card.ok     .v-title { color: var(--ok);     }
-  .verdict-card .v-desc { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 480px; margin: 0 auto; }
-  .valley-stamp { margin-top: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--sand); opacity: 0.6; text-transform: uppercase; }
+  .verdict-card .v-desc { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 460px; margin: 0 auto; }
+  .valley-stamp { margin-top: 14px; font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--sand); opacity: 0.6; text-transform: uppercase; }
 
-  .cross-check-box { background: var(--night3); border-top: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; }
+  .cross-check-box { background: var(--night3); border-top: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; }
   .cross-check-box .cc-info { color: var(--muted); font-family: var(--mono); font-size: 11px; }
 
-  .status-msg { font-family: var(--mono); font-size: 13px; color: var(--muted); padding: 32px; text-align: center; background: var(--night2); border: 1px solid var(--border); border-radius: 12px; }
+  .status-msg { font-family: var(--mono); font-size: 13px; color: var(--muted); padding: 28px; text-align: center; background: var(--night2); border: 1px solid var(--border); border-radius: 12px; }
   .status-msg.error { color: var(--danger); }
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -143,10 +150,9 @@
 
 <div id="mainContent">
   <div class="hero">
-    <div class="badge">Valley RP · Staff Control Center</div>
-    <h1><span class="valley">Valley</span> Staff Checker</h1>
-    <div class="sub">Sandy Shores &amp; Paleto Bay</div>
-    <p>Pannello unificato di controllo: inserisci Steam e Discord per l'analisi e il riscontro incrociato immediato.</p>
+    <img src="https://i.ibb.co/3ykB03h/image.png" alt="Valley RP Logo" class="logo-img" id="logoValley" />
+    <div class="badge">Staff Security Console</div>
+    <p>Strumento unificato di controllo incrociato e analisi profili per lo staff.</p>
   </div>
 
   <div class="api-notice">
@@ -160,16 +166,16 @@
   <div class="checker-box">
     <div class="input-group">
       <label class="search-label">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg" alt="Steam"> 
-        SteamID64 / FiveM Hex ID / URL Profilo *
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg" alt="Steam Logo"> 
+        SteamID64 / FiveM Hex / Profilo
       </label>
       <input type="text" id="steamInput" placeholder="Es. 76561198... / 1100001..." />
     </div>
 
     <div class="input-group">
       <label class="search-label">
-        <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Discord"> 
-        Discord Snowflake ID Utente *
+        <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Discord Logo"> 
+        Discord Snowflake ID Utente
       </label>
       <input type="text" id="discordInput" placeholder="Es. 123456789012345678" maxlength="20" />
     </div>
@@ -327,7 +333,7 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
     if (diffDays > 1095 && discordDate.getTime() > steamTimestampSec) {
       crossCheckHtml = `
         <div class="cross-check-box" style="border-left: 3px solid var(--danger);">
-          <div><strong>⚠ Allerta Multi-Account:</strong> Steam molto vecchio ma Discord recente. Possibile profilo acquistato/alt.</div>
+          <div><strong>⚠ Allerta Multi-Account:</strong> Steam molto vecchio ma Discord recente. Possibile alt/acquisto.</div>
           <div class="cc-info">Gap: > 3 anni</div>
         </div>`;
     } else {
@@ -381,7 +387,7 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
         <div class="stat-cell"><div class="stat-label">Stato Età</div><div class="stat-value ${discordAgeWarn?'warn':'ok'}">${discordAgeWarn?'Recente (<2 mesi)':'Regolare'}</div></div>
         <div class="stat-cell"><div class="stat-label">Link Diretto</div><div class="stat-value" style="font-size:12px"><a href="https://discord.com/users/${discordId}" target="_blank" style="color:var(--sky); text-decoration:none">Apri Profilo ↗</a></div></div>
       </div>
-      ${discordAgeWarn ? `<div class="ban-alert warn" style="margin:16px 24px 20px"><div><strong>Attenzione:</strong> L'account Discord è stato creato di recente (${discordCreatedStr}). Verificare la presenza di eventuali account principali o motivi di tale creazione.</div></div>` : ''}
+      ${discordAgeWarn ? `<div class="ban-alert warn" style="margin:16px 24px 20px"><div><strong>Attenzione:</strong> L'account Discord è stato creato di recente (${discordCreatedStr}). Verificare la presenza di eventuali account principali.</div></div>` : ''}
     </div>
 
     <div class="card">
