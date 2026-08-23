@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Valley RP · Staff Control Center</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&family=Share+Tech+Mono&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600&family=Share+Tech+Mono&display=swap');
 
   :root {
     --sky:       #4aa3df;
@@ -45,17 +45,36 @@
 
   .hero { width: 100%; max-width: 680px; text-align: center; padding: 40px 24px 24px; display: flex; flex-direction: column; align-items: center; }
   
-  .logo-img {
-    max-width: 280px;
-    height: auto;
-    margin-bottom: 16px;
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+  .logo-container {
+    margin-bottom: 12px;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.7));
+  }
+  .logo-text {
+    font-family: var(--serif);
+    font-size: clamp(42px, 8vw, 64px);
+    font-weight: 900;
+    font-style: italic;
+    background: linear-gradient(180deg, #fff2cc 0%, var(--gold) 60%, #b37a10 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
+  .logo-sub {
+    font-family: var(--serif);
+    font-size: clamp(14px, 2.5vw, 19px);
+    font-weight: 700;
+    font-style: italic;
+    color: var(--gold);
+    letter-spacing: 1px;
+    margin-top: -4px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
   }
 
   .badge {
     display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
     color: var(--sand); border: 1px solid rgba(212,163,89,0.3); background: rgba(212,163,89,0.06);
-    border-radius: 20px; padding: 5px 16px; margin-bottom: 14px; text-transform: uppercase;
+    border-radius: 20px; padding: 5px 16px; margin-bottom: 14px; text-transform: uppercase; margin-top: 10px;
   }
   .hero p { font-size: 13px; color: var(--muted); max-width: 440px; margin: 0 auto; line-height: 1.6; }
 
@@ -150,7 +169,10 @@
 
 <div id="mainContent">
   <div class="hero">
-    <img src="https://i.ibb.co/3ykB03h/image.png" alt="Valley RP Logo" class="logo-img" id="logoValley" />
+    <div class="logo-container">
+      <div class="logo-text">Valley</div>
+      <div class="logo-sub">Sandy Shores &amp; Paleto Bay</div>
+    </div>
     <div class="badge">Staff Security Console</div>
     <p>Strumento unificato di controllo incrociato e analisi profili per lo staff.</p>
   </div>
