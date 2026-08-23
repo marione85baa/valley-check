@@ -405,7 +405,7 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
       <div class="section-title">Analisi Dettagliata Account Discord</div>
       <div class="stat-grid">
         <div class="stat-cell" style="grid-column: span 2"><div class="stat-label">Discord Snowflake ID</div><div class="stat-value" style="font-size:13px; font-family:var(--mono)">${discordId}</div></div>
-        <div class="stat-cell"><div class="stat-label">Stato Età</div><div class="stat-value ${discordAgeWarn?'warn':'ok'}">${discordAgeWarn?'Recente (<2 mesi)':'Regolare'}</div></div>
+        <div class="stat-cell"><div class="stat-label">Età Account</div><div class="stat-value ${discordAgeWarn?'warn':'ok'}" style="font-size:13px">${discordAgeText}</div></div>
         <div class="stat-cell">
           <div class="stat-label">Azione Rapida</div>
           <div class="stat-value" style="font-size:12px">
