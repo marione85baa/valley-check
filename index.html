@@ -385,7 +385,6 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
           <div class="steamid">HEX: ${hexId} | STEAMID64: ${decId}</div>
           <div class="profile-links">
             <a href="https://steamcommunity.com/profiles/${sid}" target="_blank">🔗 Steam</a>
-            <a href="https://discord.com/users/${discordId}" target="_blank">💬 Discord User</a>
             <a href="${cfxSearchUrl}" target="_blank">💬 Cfx Forum</a>
             <a href="${steamIdIoUrl}" target="_blank">🛡️ SteamID.io</a>
           </div>
@@ -407,7 +406,12 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
       <div class="stat-grid">
         <div class="stat-cell" style="grid-column: span 2"><div class="stat-label">Discord Snowflake ID</div><div class="stat-value" style="font-size:13px; font-family:var(--mono)">${discordId}</div></div>
         <div class="stat-cell"><div class="stat-label">Stato Età</div><div class="stat-value ${discordAgeWarn?'warn':'ok'}">${discordAgeWarn?'Recente (<2 mesi)':'Regolare'}</div></div>
-        <div class="stat-cell"><div class="stat-label">Link Diretto</div><div class="stat-value" style="font-size:12px"><a href="https://discord.com/users/${discordId}" target="_blank" style="color:var(--sky); text-decoration:none">Apri Profilo ↗</a></div></div>
+        <div class="stat-cell">
+          <div class="stat-label">Azione Rapida</div>
+          <div class="stat-value" style="font-size:12px">
+            <a href="https://discord.com/users/${discordId}" target="_blank" style="color:var(--sky); text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:rgba(74,163,223,0.1); border:1px solid rgba(74,163,223,0.25); padding:4px 10px; border-radius:4px;">Apri Profilo ↗</a>
+          </div>
+        </div>
       </div>
       ${discordAgeWarn ? `<div class="ban-alert warn" style="margin:16px 24px 20px"><div><strong>Attenzione:</strong> L'account Discord è stato creato di recente (${discordCreatedStr}). Verificare la presenza di eventuali account principali.</div></div>` : ''}
     </div>
