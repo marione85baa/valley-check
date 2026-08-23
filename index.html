@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Valley RP · Staff Control Center</title>
-<!-- Favicon / Logo nella scheda del browser (sostituisci il link con quello del tuo logo) -->
+<!-- Favicon / Logo nella scheda del browser -->
 <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/1536397265428545659/1536397266036854904/logo.png?ex=6a8bbbb5&is=6a8a6a35&hm=e13454fe0b9c56d5fba40198c70f4b0284234f2f7283d6206069f03c4ed7343c&">
 
 <style>
@@ -50,7 +50,19 @@
   
   .logo-container {
     margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
     filter: drop-shadow(0 4px 16px rgba(0,0,0,0.7));
+  }
+  .server-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    background: var(--night2);
   }
   .logo-text {
     font-family: var(--serif);
@@ -190,8 +202,11 @@
 <div id="mainContent">
   <div class="hero">
     <div class="logo-container">
-      <div class="logo-text">Valley</div>
-      <div class="logo-sub">Sandy Shores &amp; Paleto Bay</div>
+      <img src="https://cdn.discordapp.com/attachments/1536397265428545659/1536397266036854904/logo.png?ex=6a8bbbb5&is=6a8a6a35&hm=e13454fe0b9c56d5fba40198c70f4b0284234f2f7283d6206069f03c4ed7343c&" alt="Valley Logo" class="server-logo">
+      <div>
+        <div class="logo-text">Valley</div>
+        <div class="logo-sub">Sandy Shores &amp; Paleto Bay</div>
+      </div>
     </div>
     <div class="badge">Staff Security Console</div>
     <p>Strumento unificato di controllo incrociato e analisi profili per lo staff.</p>
