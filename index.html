@@ -132,7 +132,9 @@
   .profile-links a { font-family: var(--mono); font-size: 11px; color: var(--sky); text-decoration: none; background: rgba(74,163,223,0.08); border: 1px solid rgba(74,163,223,0.2); padding: 5px 10px; border-radius: 4px; transition: background 0.2s; }
   .profile-links a:hover { background: rgba(74,163,223,0.2); }
 
-  .section-title { font-family: var(--mono); font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--sand); padding: 14px 24px 6px; }
+  .section-title { font-family: var(--mono); font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--sand); padding: 14px 24px 6px; display: flex; align-items: center; gap: 8px; }
+  .section-title img { width: 14px; height: 14px; object-fit: contain; }
+
   .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
   .stat-cell { padding: 14px 20px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
   .stat-cell:last-child { border-right: none; }
@@ -142,7 +144,6 @@
   .stat-value.warn   { color: var(--warn);   }
   .stat-value.ok     { color: var(--ok);     }
 
-  /* Animazione e Stile per l'allarme rosso lampeggiante */
   @keyframes flashRed {
     0% { background: rgba(232, 64, 64, 0.2); border-color: rgba(232, 64, 64, 0.5); }
     50% { background: rgba(232, 64, 64, 0.7); border-color: rgba(232, 64, 64, 1); box-shadow: 0 0 20px rgba(232, 64, 64, 0.6); }
@@ -314,7 +315,7 @@ async function doCompleteCheck() {
 
     let mismatchDetected = false;
     if (steamCreatedDate) {
-      const diffDays = (discordDate.getTime() - steamCreatedDate.getTime()) / (1000 * 60 * 60 * 24);
+      const diffDays = Math.abs(discordDate.getTime() - steamCreatedDate.getTime()) / (1000 * 60 * 60 * 24);
       if (diffDays > 1095) {
         mismatchDetected = true;
       }
@@ -373,7 +374,6 @@ function renderResults(p, b, games, sid, discordDate, discordId, mismatchDetecte
   const cfxSearchUrl = `https://forum.cfx.re/search?q=${hexId}`;
   const steamIdIoUrl = `https://steamid.io/lookup/${sid}`;
 
-  // Logica verdetto basata sui ban e sulla sicurezza reale di Steam
   let verdict = { title: 'PROFILO PULITO', desc: 'Nessun ban rilevato e account regolari.', cls: 'ok' };
   if (hasBan) {
     verdict = daysBan < 180 ? { title: 'RISCHIO ALTO', desc: `Ban recente su Steam (${daysBan} giorni fa). Sconsigliato.`, cls: 'danger' } : { title: 'ATTENZIONE', desc: `Ban storico su Steam registrato ${daysBan} giorni fa.`, cls: 'warn' };
@@ -382,6 +382,9 @@ function renderResults(p, b, games, sid, discordDate, discordId, mismatchDetecte
   } else if (discordAgeWarn) {
     verdict = { title: 'DISCORD RECENTE', desc: 'L\'account Discord analizzato ha meno di 2 mesi di vita.', cls: 'warn' };
   }
+
+  const steamIcon = "https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg";
+  const discordIcon = "https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png";
 
   document.getElementById('result').innerHTML = `
     <div class="card card-accent">
@@ -398,33 +401,31 @@ function renderResults(p, b, games, sid, discordDate, discordId, mismatchDetecte
         </div>
       </div>
       
-      ${mismatchDetected ? `<div class="flash-alert-box">⚠ ATTENZIONE: Steam molto vecchio ma Discord recente.</div>` : ''}
+      ${mismatchDetected ? `<div class="flash-alert-box">⚠ ATTENZIONE: Discrepanza dati oltre i 3 anni. Controlla!</div>` : ''}
 
-      <div class="section-title">Anagrafica Piattaforme</div>
+      <div class="section-title">
+        <img src="${steamIcon}" alt="Steam"> Anagrafica Piattaforma Steam
+      </div>
       <div class="stat-grid">
         <div class="stat-cell"><div class="stat-label">Steam Creato</div><div class="stat-value" style="font-size:12px">${steamCreatedStr}</div></div>
         <div class="stat-cell"><div class="stat-label">Età Steam</div><div class="stat-value" style="font-size:13px">${steamAgeText}</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <img src="${discordIcon}" alt="Discord"> Anagrafica Piattaforma Discord
+      </div>
+      <div class="stat-grid">
         <div class="stat-cell"><div class="stat-label">Discord Creato</div><div class="stat-value" style="font-size:12px">${discordCreatedStr}</div></div>
         <div class="stat-cell"><div class="stat-label">Età Discord</div><div class="stat-value ${discordAgeWarn?'warn':''}" style="font-size:13px">${discordAgeText}</div></div>
       </div>
     </div>
 
     <div class="card">
-      <div class="section-title">Analisi Dettagliata Account Discord</div>
-      <div class="stat-grid">
-        <div class="stat-cell" style="grid-column: span 2"><div class="stat-label">ID Discord Utente</div><div class="stat-value" style="font-size:13px; font-family:var(--mono)">${discordId}</div></div>
-        <div class="stat-cell"><div class="stat-label">Età Account</div><div class="stat-value ${discordAgeWarn?'warn':'ok'}" style="font-size:13px">${discordAgeText}</div></div>
-        <div class="stat-cell">
-          <div class="stat-label">Azione Rapida</div>
-          <div class="stat-value" style="font-size:12px">
-            <a href="https://discord.com/users/${discordId}" target="_blank" style="color:var(--sky); text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:rgba(74,163,223,0.1); border:1px solid rgba(74,163,223,0.25); padding:4px 10px; border-radius:4px;">Apri Profilo ↗</a>
-          </div>
-        </div>
+      <div class="section-title">
+        <img src="${steamIcon}" alt="Steam"> Reputazione & Sicurezza Steam
       </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title">Reputazione & Sicurezza Steam</div>
       <div class="stat-grid">
         <div class="stat-cell"><div class="stat-label">Visibilità</div><div class="stat-value ${isPublic?'ok':'warn'}">${isPublic?'Pubblico':'Privato'}</div></div>
         <div class="stat-cell"><div class="stat-label">VAC Ban</div><div class="stat-value ${b.VACBanned?'danger':'ok'}">${b.VACBanned?'SÌ':'NO'}</div></div>
