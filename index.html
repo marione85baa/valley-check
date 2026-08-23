@@ -142,9 +142,6 @@
   .stat-value.warn   { color: var(--warn);   }
   .stat-value.ok     { color: var(--ok);     }
 
-  .ban-alert { margin: 0 24px 20px; border-radius: 8px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; font-size: 13px; line-height: 1.6; }
-  .ban-alert.warn { background: rgba(232,168,50,0.08); border: 1px solid rgba(232,168,50,0.25); color: #f0c060; }
-  
   /* Animazione e Stile per l'allarme rosso lampeggiante */
   @keyframes flashRed {
     0% { background: rgba(232, 64, 64, 0.2); border-color: rgba(232, 64, 64, 0.5); }
@@ -318,7 +315,6 @@ async function doCompleteCheck() {
     let mismatchDetected = false;
     if (steamCreatedDate) {
       const diffDays = (discordDate.getTime() - steamCreatedDate.getTime()) / (1000 * 60 * 60 * 24);
-      // Se l'account Discord è recente ma Steam è molto vecchio (gap > 3 anni)
       if (diffDays > 1095) {
         mismatchDetected = true;
       }
@@ -377,10 +373,9 @@ function renderResults(p, b, games, sid, discordDate, discordId, mismatchDetecte
   const cfxSearchUrl = `https://forum.cfx.re/search?q=${hexId}`;
   const steamIdIoUrl = `https://steamid.io/lookup/${sid}`;
 
+  // Logica verdetto basata sui ban e sulla sicurezza reale di Steam
   let verdict = { title: 'PROFILO PULITO', desc: 'Nessun ban rilevato e account regolari.', cls: 'ok' };
-  if (mismatchDetected) {
-    verdict = { title: 'DISCREPANZA CRITICA', desc: 'Rilevato forte scostamento temporale tra Steam e Discord.', cls: 'danger' };
-  } else if (hasBan) {
+  if (hasBan) {
     verdict = daysBan < 180 ? { title: 'RISCHIO ALTO', desc: `Ban recente su Steam (${daysBan} giorni fa). Sconsigliato.`, cls: 'danger' } : { title: 'ATTENZIONE', desc: `Ban storico su Steam registrato ${daysBan} giorni fa.`, cls: 'warn' };
   } else if (!isPublic) {
     verdict = { title: 'PROFILO PRIVATO', desc: 'Impossibile verificare ore e storico Steam in modo completo.', cls: 'warn' };
