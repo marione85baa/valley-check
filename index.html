@@ -16,7 +16,443 @@
     --wood:      #4a2e18;
     --night:     #0c151d;
     --night2:    #14222e;
+    --night3:    #1c2e3f;<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valley RP · Staff Control Center</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --sky:       #4aa3df;
+    --sky-dark:  #1d6b9e;
+    --sand:      #d4a359;
+    --gold:      #e8a832;
+    --gold-dark: #b37a10;
+    --wood:      #4a2e18;
+    --night:     #0c151d;
+    --night2:    #14222e;
     --night3:    #1c2e3f;
+    --border:    #2a4359;
+    --danger:    #e84040;
+    --warn:      #e8a832;
+    --ok:        #4ec97b;
+    --text:      #f0e6d2;
+    --muted:     #8ca6b8;
+    --mono:      'Share Tech Mono', monospace;
+    --serif:     'Playfair Display', Georgia, serif;
+    --sans:      'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--night);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 16px 80px;
+    background-image: radial-gradient(circle at 50% 0%, #1a3247 0%, var(--night) 70%);
+  }
+
+  #mainContent { width: 100%; display: flex; flex-direction: column; align-items: center; }
+
+  .hero { width: 100%; max-width: 700px; text-align: center; padding: 48px 24px 32px; }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
+    color: var(--sand); border: 1px solid rgba(212,163,89,0.4); background: rgba(212,163,89,0.08);
+    border-radius: 20px; padding: 6px 18px; margin-bottom: 18px; text-transform: uppercase;
+  }
+  .hero h1 { font-family: var(--serif); font-size: clamp(32px, 6vw, 52px); font-weight: 900; line-height: 1.05; color: #fff; margin-bottom: 6px; }
+  .hero h1 .valley { color: var(--gold); }
+  .hero .sub { font-family: var(--mono); font-size: 12px; letter-spacing: 2px; color: var(--sky); margin-bottom: 14px; text-transform: uppercase; }
+  .hero p { font-size: 14px; color: var(--muted); max-width: 440px; margin: 0 auto; line-height: 1.6; }
+
+  .divider { width: 100%; max-width: 700px; display: flex; align-items: center; gap: 16px; margin: 28px 0; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+  .divider span { font-family: var(--mono); font-size: 10px; color: var(--sand); letter-spacing: 2px; text-transform: uppercase; }
+
+  .api-notice {
+    width: 100%; max-width: 640px; background: rgba(74,163,223,0.05); border: 1px solid rgba(74,163,223,0.2);
+    border-radius: 10px; padding: 16px 20px; font-size: 13px; color: var(--muted); line-height: 1.7;
+  }
+  .api-notice strong { color: var(--sky); }
+  .api-notice a { color: var(--gold); text-decoration: none; }
+  .api-key-row { display: flex; gap: 8px; margin-top: 10px; }
+  .api-key-row input {
+    flex: 1; background: var(--night); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 12px; font-family: var(--mono); font-size: 12px; color: var(--text); outline: none;
+  }
+  .api-key-row button {
+    background: var(--sky-dark); border: none; border-radius: 6px; padding: 8px 16px;
+    font-size: 12px; font-weight: 600; color: #fff; cursor: pointer; transition: background 0.2s;
+  }
+  .api-key-row button:hover { background: var(--sky); }
+
+  .search-wrap, .cfx-wrap { width: 100%; max-width: 640px; }
+  .search-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+  .search-row { display: flex; gap: 10px; }
+  .search-row input {
+    flex: 1; background: var(--night2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 18px; font-family: var(--mono); font-size: 14px; color: var(--text); outline: none;
+  }
+  .search-row input:focus { border-color: var(--sand); }
+  .search-row button {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    border: none; border-radius: 8px; padding: 14px 26px; font-size: 14px; font-weight: 600;
+    color: var(--wood); cursor: pointer; white-space: nowrap; transition: filter 0.2s;
+  }
+  .search-row button:hover { filter: brightness(1.1); }
+  .hint { margin-top: 8px; font-size: 11px; color: var(--muted); font-family: var(--mono); opacity: 0.7; }
+
+  #result { width: 100%; max-width: 680px; }
+  .card { background: var(--night2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+  .card-accent { border-top: 2px solid var(--gold); }
+  .profile-header { display: flex; align-items: center; gap: 20px; padding: 22px 24px; border-bottom: 1px solid var(--border); }
+  .avatar-wrap img { width: 68px; height: 68px; border-radius: 8px; border: 2px solid var(--gold); }
+  .profile-info h2 { font-family: var(--serif); font-size: 20px; color: #fff; margin-bottom: 4px; }
+  .profile-info .steamid { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 5px; }
+  .profile-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .profile-links a { font-family: var(--mono); font-size: 11px; color: var(--sky); text-decoration: none; background: rgba(74,163,223,0.08); border: 1px solid rgba(74,163,223,0.2); padding: 4px 10px; border-radius: 4px; transition: background 0.2s; }
+  .profile-links a:hover { background: rgba(74,163,223,0.2); }
+
+  .section-title { font-family: var(--mono); font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--sand); padding: 14px 24px 6px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .stat-cell { padding: 14px 22px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .stat-cell:last-child { border-right: none; }
+  .stat-label { font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .stat-value { font-size: 16px; font-weight: 700; color: #fff; }
+  .stat-value.danger { color: var(--danger); }
+  .stat-value.warn   { color: var(--warn);   }
+  .stat-value.ok     { color: var(--ok);     }
+
+  .ban-alert { margin: 0 24px 20px; border-radius: 8px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; font-size: 13px; line-height: 1.6; }
+  .ban-alert.warn { background: rgba(232,168,50,0.08); border: 1px solid rgba(232,168,50,0.25); color: #f0c060; }
+  .ban-alert.danger { background: rgba(232,64,64,0.08); border: 1px solid rgba(232,64,64,0.3); color: #f07070; }
+
+  .verdict-card { border-radius: 12px; padding: 28px 24px; text-align: center; }
+  .verdict-card.danger { background: rgba(232,64,64,0.08); border: 1px solid rgba(232,64,64,0.3); }
+  .verdict-card.warn   { background: rgba(232,168,50,0.07); border: 1px solid rgba(232,168,50,0.28); }
+  .verdict-card.ok     { background: rgba(78,201,123,0.06); border: 1px solid rgba(78,201,123,0.25); }
+  .verdict-card .v-title { font-family: var(--serif); font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .verdict-card.danger .v-title { color: var(--danger); }
+  .verdict-card.warn   .v-title { color: var(--warn);   }
+  .verdict-card.ok     .v-title { color: var(--ok);     }
+  .verdict-card .v-desc { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 480px; margin: 0 auto; }
+  .valley-stamp { margin-top: 18px; font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--sand); opacity: 0.6; text-transform: uppercase; }
+
+  .cross-check-box { background: var(--night3); border-top: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; }
+  .cross-check-box .cc-info { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+
+  .status-msg { font-family: var(--mono); font-size: 13px; color: var(--muted); padding: 32px; text-align: center; background: var(--night2); border: 1px solid var(--border); border-radius: 12px; }
+  .status-msg.error { color: var(--danger); }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="mainContent">
+  <div class="hero">
+    <div class="badge">Valley RP · Staff Control Center</div>
+    <h1><span class="valley">Valley</span> Staff Checker</h1>
+    <div class="sub">Sandy Shores &amp; Paleto Bay</div>
+    <p>Pannello di verifica avanzata per whitelist: controlla la reputazione di Steam e l'affidabilità di Discord dei nuovi utenti[cite: 1].</p>
+  </div>
+
+  <div class="api-notice">
+    <strong>Configurazione iniziale:</strong> Inserisci la tua Steam Web API Key (<a href="https://steamcommunity.com/dev/apikey" target="_blank">ottienila qui</a>) per abilitare i controlli automatici[cite: 1].
+    <div class="api-key-row">
+      <input type="text" id="apiKeyInput" placeholder="Inserisci Steam Web API Key…" maxlength="64"/>
+      <button onclick="saveKey()">Salva</button>
+    </div>
+  </div>
+
+  <div class="divider"><span>verifica steam</span></div>
+
+  <div class="search-wrap">
+    <label class="search-label">SteamID64 / FiveM Hex ID / Profilo URL</label>
+    <div class="search-row">
+      <input type="text" id="steamInput" placeholder="Es. 76561198... / 1100001..." />
+      <button id="searchBtn" onclick="doSearch()">Analizza Steam</button>
+    </div>
+    <div class="hint">Rileva automaticamente VAC ban, profilo privato e condivisione famigliare[cite: 1].</div>
+  </div>
+
+  <div class="divider"><span>verifica discord</span></div>
+
+  <div class="cfx-wrap">
+    <label class="search-label">Discord Snowflake ID utente</label>
+    <div class="search-row">
+      <input type="text" id="discordInput" placeholder="Es. 123456789012345678" maxlength="20"/>
+      <button onclick="openDiscord()">Analizza Discord</button>
+    </div>
+    <div class="hint">Calcola l'esatta età dell'account (anni e mesi) per filtrare i fake/alt[cite: 1].</div>
+    <div id="discordPanel"></div>
+  </div>
+
+  <div class="divider"><span>esito dei controlli</span></div>
+
+  <div id="result">
+    <div class="status-msg">In attesa di un input per la verifica dello staff…[cite: 1]</div>
+  </div>
+</div>
+
+<script>
+let API_KEY = localStorage.getItem('valley_steam_key') || '';
+if (API_KEY) {
+  const inputEl = document.getElementById('apiKeyInput');
+  if (inputEl) inputEl.value = API_KEY;
+}
+let lastAnalyzedSteamTime = null;
+
+function saveKey() {
+  const inputEl = document.getElementById('apiKeyInput');
+  if (!inputEl) return;
+  const val = inputEl.value.trim();
+  if (!val) return;
+  API_KEY = val;
+  try {
+    localStorage.setItem('valley_steam_key', API_KEY);
+  } catch(e) {}
+  alert('✓ API Key salvata correttamente!');
+}
+
+function showMsg(txt, err) {
+  document.getElementById('result').innerHTML = `<div class="status-msg ${err?'error':''}">${txt}</div>`;
+}
+
+function showLoading(txt) {
+  document.getElementById('result').innerHTML = `<div class="status-msg"><span class="spinner"></span>${txt}</div>`;
+}
+
+async function fetchSteam(ep, params) {
+  const targetUrl = `https://api.steampowered.com/${ep}/v0001/?key=${API_KEY}&${params}&format=json`;
+  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+  
+  try {
+    const r = await fetch(proxyUrl);
+    if (!r.ok) throw new Error('Errore di comunicazione con le API di Steam.');
+    return await r.json();
+  } catch(err) {
+    throw new Error('Impossibile contattare le API di Steam.');
+  }
+}
+
+async function resolveId(raw) {
+  raw = raw.trim();
+  if (/^\d{17}$/.test(raw)) return raw;
+  if (/^1100001[0-9a-f]{8}$/i.test(raw)) return BigInt('0x' + raw).toString();
+  let m = raw.match(/profiles\/(\d{17})/);
+  if (m) return m[1];
+  m = raw.match(/id\/([^\/\?]+)/);
+  const vanity = m ? m[1] : raw;
+  
+  const targetUrl = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${API_KEY}&vanityurl=${encodeURIComponent(vanity)}&format=json`;
+  const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+  const d = await r.json();
+  
+  if (!d.response || d.response.success !== 1) throw new Error('Profilo Steam non trovato.');
+  return d.response.steamid;
+}
+
+async function doSearch() {
+  const raw = document.getElementById('steamInput').value.trim();
+  if (!raw) return;
+  if (!API_KEY) { showMsg('⚠ Inserisci prima la tua Steam Web API Key.', true); return; }
+  
+  const btn = document.getElementById('searchBtn');
+  if (btn) btn.disabled = true;
+  
+  try {
+    showLoading('Connessione a Steam in corso…');
+    const sid = await resolveId(raw);
+    
+    // Chiamate dirette parallele
+    const [sumRes, banRes] = await Promise.all([
+      fetch(`https://corsproxy.io/?${encodeURIComponent(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${API_KEY}&steamids=${sid}&format=json`)}`),
+      fetch(`https://corsproxy.io/?${encodeURIComponent(`https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${API_KEY}&steamids=${sid}&format=json`)}`)
+    ]);
+    
+    const sumData = await sumRes.json();
+    const banData = await banRes.json();
+    
+    const p = sumData.response.players[0];
+    const b = banData.players[0];
+    if (!p) throw new Error('Profilo Steam non trovato.');
+
+    lastAnalyzedSteamTime = p.timecreated || null;
+
+    let games = null;
+    try {
+      const gdRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${API_KEY}&steamid=${sid}&include_appinfo=1&include_played_free_games=1&format=json`)}`);
+      const gd = await gdRes.json();
+      games = gd.response.games || [];
+    } catch(e) {}
+
+    renderSteam(p, b, games, sid);
+  } catch(e) {
+    showMsg('❌ Errore: ' + e.message, true);
+  }
+  
+  if (btn) btn.disabled = false;
+}
+
+function renderSteam(p, b, games, sid) {
+  const createdDate = p.timecreated ? new Date(p.timecreated * 1000) : null;
+  const created = createdDate ? createdDate.toLocaleDateString('it-IT', {day:'2-digit', month:'long', year:'numeric'}) : 'N/D';
+  
+  let ageText = 'N/D';
+  if (createdDate) {
+    const now = new Date();
+    let years = now.getFullYear() - createdDate.getFullYear();
+    let months = now.getMonth() - createdDate.getMonth();
+    if (months < 0 || (months === 0 && now.getDate() < createdDate.getDate())) { years--; months += 12; }
+    
+    let parts = [];
+    if (years > 0) parts.push(years + (years === 1 ? ' anno' : ' anni'));
+    if (months > 0) parts.push(months + (months === 1 ? ' mese' : ' mesi'));
+    ageText = parts.length > 0 ? parts.join(' e ') : 'Meno di un mese';
+  }
+
+  const hasBan  = b.VACBanned || b.NumberOfGameBans > 0;
+  const daysBan = b.DaysSinceLastBan;
+  const isPublic = p.communityvisibilitystate === 3;
+  let totalHours = games ? Math.round(games.reduce((s,g)=>s+g.playtime_forever,0)/60).toLocaleString('it-IT') + ' ore' : 'N/D';
+
+  const hexId = BigInt(sid).toString(16);
+  const decId = sid;
+  
+  const cfxSearchUrl = `https://forum.cfx.re/search?q=${hexId}`;
+  const steamIdIoUrl = `https://steamid.io/lookup/${sid}`;
+
+  let verdict = { title: 'PROFILO PULITO', desc: 'Nessun ban rilevato e account regolare.', cls: 'ok' };
+  if (hasBan) {
+    verdict = daysBan < 180 ? { title: 'RISCHIO ALTO', desc: `Ban recente (${daysBan} giorni fa). Sconsigliato.`, cls: 'danger' } : { title: 'ATTENZIONE', desc: `Ban storico registrato ${daysBan} giorni fa.`, cls: 'warn' };
+  } else if (!isPublic) {
+    verdict = { title: 'PROFILO PRIVATO', desc: 'Impossibile verificare ore e storico.', cls: 'warn' };
+  }
+
+  document.getElementById('result').innerHTML = `
+    <div class="card card-accent">
+      <div class="profile-header">
+        <div class="avatar-wrap"><img src="${p.avatarmedium}" alt="avatar"/></div>
+        <div class="profile-info">
+          <h2>${esc(p.personaname)}</h2>
+          <div class="steamid">HEX: ${hexId} | STEAMID64: ${decId}</div>
+          <div class="profile-links">
+            <a href="https://steamcommunity.com/profiles/${sid}" target="_blank">🔗 Steam</a>
+            <a href="${cfxSearchUrl}" target="_blank">💬 Cfx Forum</a>
+            <a href="${steamIdIoUrl}" target="_blank">🛡️ SteamID.io</a>
+          </div>
+        </div>
+      </div>
+      <div class="section-title">Informazioni Generali Steam</div>
+      <div class="stat-grid">
+        <div class="stat-cell"><div class="stat-label">Creato il</div><div class="stat-value" style="font-size:12px">${created}</div></div>
+        <div class="stat-cell"><div class="stat-label">Età account</div><div class="stat-value" style="font-size:14px">${ageText}</div></div>
+        <div class="stat-cell"><div class="stat-label">Visibilità</div><div class="stat-value ${isPublic?'ok':'warn'}">${isPublic?'Pubblico':'Privato'}</div></div>
+        <div class="stat-cell"><div class="stat-label">Paese</div><div class="stat-value">${p.loccountrycode || 'N/D'}</div></div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="section-title">Controlli Avanzati FiveM & Reputazione</div>
+      <div style="padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: var(--muted);">
+        <div><strong>Identificativi di Gioco pronti per il copia/incolla:</strong></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="background:var(--night3); padding:10px; border-radius:6px; font-family:var(--mono); font-size:11px; word-break:break-all;">
+            <span style="color:var(--sand); display:block; margin-bottom:2px">HEX ID (FiveM):</span> ${hexId}
+          </div>
+          <div style="background:var(--night3); padding:10px; border-radius:6px; font-family:var(--mono); font-size:11px; word-break:break-all;">
+            <span style="color:var(--sand); display:block; margin-bottom:2px">Decimal ID:</span> ${decId}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Reputazione & Attività Steam</div>
+      <div class="stat-grid">
+        <div class="stat-cell"><div class="stat-label">VAC Ban</div><div class="stat-value ${b.VACBanned?'danger':'ok'}">${b.VACBanned?'SÌ':'NO'}</div></div>
+        <div class="stat-cell"><div class="stat-label">Game Ban</div><div class="stat-value ${b.NumberOfGameBans>0?'danger':'ok'}">${b.NumberOfGameBans}</div></div>
+        <div class="stat-cell"><div class="stat-label">Giorni dall'ultimo ban</div><div class="stat-value">${hasBan?daysBan:'—'}</div></div>
+        <div class="stat-cell"><div class="stat-label">Ore registrate</div><div class="stat-value" style="font-size:14px">${totalHours}</div></div>
+      </div>
+    </div>
+    <div class="verdict-card ${verdict.cls}">
+      <div class="v-title">${verdict.title}</div>
+      <div class="v-desc">${verdict.desc}</div>
+      <div class="valley-stamp">Valley RP Staff Security Tool</div>
+    </div>
+  `;
+}
+
+function openDiscord() {
+  const id = document.getElementById('discordInput').value.trim();
+  if (!id || !/^\d{17,19}$/.test(id)) {
+    document.getElementById('discordPanel').innerHTML = '<div class="status-msg error" style="margin-top:12px">⚠ ID Discord non valido.</div>';
+    return;
+  }
+  const DISCORD_EPOCH = 1420070400000n;
+  const discordTimestamp = Number((BigInt(id) >> 22n) + DISCORD_EPOCH);
+  const createdDate = new Date(discordTimestamp);
+  const createdStr = createdDate.toLocaleDateString('it-IT', {day:'2-digit', month:'long', year:'numeric'});
+  const now = new Date();
+  let years = now.getFullYear() - createdDate.getFullYear();
+  let months = now.getMonth() - createdDate.getMonth();
+  if (months < 0 || (months === 0 && now.getDate() < createdDate.getDate())) { years--; months += 12; }
+
+  let parts = [];
+  if (years > 0) parts.push(years + (years === 1 ? ' anno' : ' anni'));
+  if (months > 0) parts.push(months + (months === 1 ? ' mese' : ' mesi'));
+  let ageText = parts.length > 0 ? parts.join(' e ') : 'Meno di un mese';
+  const ageWarn = (years === 0 && months < 2);
+
+  let crossCheckHtml = '';
+  if (lastAnalyzedSteamTime) {
+    const steamTimestampSec = lastAnalyzedSteamTime * 1000;
+    const diffDays = Math.abs(discordTimestamp - steamTimestampSec) / (1000 * 60 * 60 * 24);
+    
+    if (diffDays > 1095 && discordTimestamp > steamTimestampSec) {
+      crossCheckHtml = `
+        <div class="cross-check-box" style="border-left: 3px solid var(--danger);">
+          <div><strong>⚠ Allerta Multi-Account:</strong> Steam molto vecchio ma Discord recente. Possibile profilo acquistato/alt.</div>
+          <div class="cc-info">Gap: > 3 anni</div>
+        </div>`;
+    } else {
+      crossCheckHtml = `
+        <div class="cross-check-box" style="border-left: 3px solid var(--ok);">
+          <div><strong>✓ Controllo Incrociato:</strong> Coerenza account OK (nessuna discrepanza critica).</div>
+          <div class="cc-info">Allineato</div>
+        </div>`;
+    }
+  }
+
+  document.getElementById('discordPanel').innerHTML = `
+    <div class="card" style="margin-top:16px">
+      <div class="section-title">Analisi Profilo Discord</div>
+      <div class="stat-grid">
+        <div class="stat-cell"><div class="stat-label">Creato il</div><div class="stat-value" style="font-size:13px">${createdStr}</div></div>
+        <div class="stat-cell" style="grid-column: span 2"><div class="stat-label">Età account</div><div class="stat-value ${ageWarn?'warn':''}">${ageText}</div></div>
+      </div>
+      <div style="padding:16px 24px 8px">
+        <a href="https://discord.com/users/${id}" target="_blank" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--night3);border:1px solid var(--border);border-radius:7px;padding:12px 16px;color:var(--sky);font-family:var(--mono);font-size:12px;text-decoration:none;width:100%">🔗 Apri profilo Discord</a>
+      </div>
+      ${crossCheckHtml}
+      ${ageWarn ? `<div class="ban-alert warn" style="margin:16px 24px 20px"><div><strong>Attenzione:</strong> Account Discord recente (meno di 2 mesi).</div></div>` : ''}
+    </div>
+  `;
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
     --border:    #2a4359;
     --danger:    #e84040;
     --warn:      #e8a832;
