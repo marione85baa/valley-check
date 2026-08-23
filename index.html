@@ -54,13 +54,9 @@
   .hero .sub { font-family: var(--mono); font-size: 12px; letter-spacing: 2px; color: var(--sky); margin-bottom: 14px; text-transform: uppercase; }
   .hero p { font-size: 14px; color: var(--muted); max-width: 440px; margin: 0 auto; line-height: 1.6; }
 
-  .divider { width: 100%; max-width: 700px; display: flex; align-items: center; gap: 16px; margin: 28px 0; }
-  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
-  .divider span { font-family: var(--mono); font-size: 10px; color: var(--sand); letter-spacing: 2px; text-transform: uppercase; }
-
   .api-notice {
     width: 100%; max-width: 640px; background: rgba(74,163,223,0.05); border: 1px solid rgba(74,163,223,0.2);
-    border-radius: 10px; padding: 16px 20px; font-size: 13px; color: var(--muted); line-height: 1.7;
+    border-radius: 10px; padding: 16px 20px; font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 24px;
   }
   .api-notice strong { color: var(--sky); }
   .api-notice a { color: var(--gold); text-decoration: none; }
@@ -80,7 +76,9 @@
     border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px;
   }
   .input-group { display: flex; flex-direction: column; gap: 6px; }
-  .search-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+  .search-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+  .search-label img { width: 16px; height: 16px; object-fit: contain; }
+  
   .checker-box input {
     width: 100%; background: var(--night); border: 1px solid var(--border); border-radius: 8px;
     padding: 12px 16px; font-family: var(--mono); font-size: 13px; color: var(--text); outline: none;
@@ -148,10 +146,10 @@
     <div class="badge">Valley RP · Staff Control Center</div>
     <h1><span class="valley">Valley</span> Staff Checker</h1>
     <div class="sub">Sandy Shores &amp; Paleto Bay</div>
-    <p>Pannello di verifica unificato: inserisci entrambi i dati per avviare l'analisi completa e il controllo incrociato.</p>
+    <p>Pannello unificato di controllo: inserisci Steam e Discord per l'analisi e il riscontro incrociato immediato.</p>
   </div>
 
-  <div class="api-notice" style="margin-bottom: 24px;">
+  <div class="api-notice">
     <strong>Configurazione iniziale:</strong> Inserisci la tua Steam Web API Key (<a href="https://steamcommunity.com/dev/apikey" target="_blank">ottienila qui</a>).
     <div class="api-key-row">
       <input type="text" id="apiKeyInput" placeholder="Inserisci Steam Web API Key…" maxlength="64"/>
@@ -161,12 +159,18 @@
 
   <div class="checker-box">
     <div class="input-group">
-      <label class="search-label">SteamID64 / FiveM Hex ID / URL Profilo *</label>
+      <label class="search-label">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg" alt="Steam"> 
+        SteamID64 / FiveM Hex ID / URL Profilo *
+      </label>
       <input type="text" id="steamInput" placeholder="Es. 76561198... / 1100001..." />
     </div>
 
     <div class="input-group">
-      <label class="search-label">Discord Snowflake ID Utente *</label>
+      <label class="search-label">
+        <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Discord"> 
+        Discord Snowflake ID Utente *
+      </label>
       <input type="text" id="discordInput" placeholder="Es. 123456789012345678" maxlength="20" />
     </div>
 
@@ -245,7 +249,6 @@ async function doCompleteCheck() {
   try {
     showLoading('Analisi profili e controllo incrociato in corso…');
     
-    // 1. Risolvi Steam ID e scarica dati
     const sid = await resolveId(rawSteam);
     const [sumRes, banRes] = await Promise.all([
       fetch(`https://corsproxy.io/?${encodeURIComponent(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${API_KEY}&steamids=${sid}&format=json`)}`),
@@ -266,7 +269,6 @@ async function doCompleteCheck() {
       games = gd.response.games || [];
     } catch(e) {}
 
-    // 2. Elaborazione dati Discord & Cross-check
     const DISCORD_EPOCH = 1420070400000n;
     const discordTimestamp = Number((BigInt(rawDiscord) >> 22n) + DISCORD_EPOCH);
     const discordDate = new Date(discordTimestamp);
@@ -281,7 +283,6 @@ async function doCompleteCheck() {
 }
 
 function renderResults(p, b, games, sid, discordDate, discordId) {
-  // Steam info
   const steamCreatedDate = p.timecreated ? new Date(p.timecreated * 1000) : null;
   const steamCreatedStr = steamCreatedDate ? steamCreatedDate.toLocaleDateString('it-IT', {day:'2-digit', month:'long', year:'numeric'}) : 'N/D';
   
@@ -297,7 +298,6 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
     steamAgeText = parts.length > 0 ? parts.join(' e ') : 'Meno di un mese';
   }
 
-  // Discord info
   const discordCreatedStr = discordDate.toLocaleDateString('it-IT', {day:'2-digit', month:'long', year:'numeric'});
   const now = new Date();
   let dYears = now.getFullYear() - discordDate.getFullYear();
@@ -309,7 +309,6 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
   let discordAgeText = dParts.length > 0 ? dParts.join(' e ') : 'Meno di un mese';
   const discordAgeWarn = (dYears === 0 && dMonths < 2);
 
-  // Status metrics
   const hasBan = b.VACBanned || b.NumberOfGameBans > 0;
   const daysBan = b.DaysSinceLastBan;
   const isPublic = p.communityvisibilitystate === 3;
@@ -320,7 +319,6 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
   const cfxSearchUrl = `https://forum.cfx.re/search?q=${hexId}`;
   const steamIdIoUrl = `https://steamid.io/lookup/${sid}`;
 
-  // Controllo Incrociato Logica
   let crossCheckHtml = '';
   if (steamCreatedDate) {
     const steamTimestampSec = steamCreatedDate.getTime();
@@ -341,14 +339,13 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
     }
   }
 
-  // Verdict generale
   let verdict = { title: 'PROFILO PULITO', desc: 'Nessun ban rilevato e account regolari.', cls: 'ok' };
   if (hasBan) {
     verdict = daysBan < 180 ? { title: 'RISCHIO ALTO', desc: `Ban recente su Steam (${daysBan} giorni fa). Sconsigliato.`, cls: 'danger' } : { title: 'ATTENZIONE', desc: `Ban storico su Steam registrato ${daysBan} giorni fa.`, cls: 'warn' };
   } else if (!isPublic) {
     verdict = { title: 'PROFILO PRIVATO', desc: 'Impossibile verificare ore e storico Steam in modo completo.', cls: 'warn' };
   } else if (discordAgeWarn) {
-    verdict = { title: 'DISCORD RECENTE', desc: 'L\'account Discord ha meno di 2 mesi di vita.', cls: 'warn' };
+    verdict = { title: 'DISCORD RECENTE', desc: 'L\'account Discord analizzato ha meno di 2 mesi di vita.', cls: 'warn' };
   }
 
   document.getElementById('result').innerHTML = `
@@ -360,7 +357,7 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
           <div class="steamid">HEX: ${hexId} | STEAMID64: ${decId}</div>
           <div class="profile-links">
             <a href="https://steamcommunity.com/profiles/${sid}" target="_blank">🔗 Steam</a>
-            <a href="https://discord.com/users/${discordId}" target="_blank">💬 Discord</a>
+            <a href="https://discord.com/users/${discordId}" target="_blank">💬 Discord User</a>
             <a href="${cfxSearchUrl}" target="_blank">💬 Cfx Forum</a>
             <a href="${steamIdIoUrl}" target="_blank">🛡️ SteamID.io</a>
           </div>
@@ -378,6 +375,16 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
     </div>
 
     <div class="card">
+      <div class="section-title">Analisi Dettagliata Account Discord</div>
+      <div class="stat-grid">
+        <div class="stat-cell" style="grid-column: span 2"><div class="stat-label">Discord Snowflake ID</div><div class="stat-value" style="font-size:13px; font-family:var(--mono)">${discordId}</div></div>
+        <div class="stat-cell"><div class="stat-label">Stato Età</div><div class="stat-value ${discordAgeWarn?'warn':'ok'}">${discordAgeWarn?'Recente (<2 mesi)':'Regolare'}</div></div>
+        <div class="stat-cell"><div class="stat-label">Link Diretto</div><div class="stat-value" style="font-size:12px"><a href="https://discord.com/users/${discordId}" target="_blank" style="color:var(--sky); text-decoration:none">Apri Profilo ↗</a></div></div>
+      </div>
+      ${discordAgeWarn ? `<div class="ban-alert warn" style="margin:16px 24px 20px"><div><strong>Attenzione:</strong> L'account Discord è stato creato di recente (${discordCreatedStr}). Verificare la presenza di eventuali account principali o motivi di tale creazione.</div></div>` : ''}
+    </div>
+
+    <div class="card">
       <div class="section-title">Reputazione & Sicurezza Steam</div>
       <div class="stat-grid">
         <div class="stat-cell"><div class="stat-label">Visibilità</div><div class="stat-value ${isPublic?'ok':'warn'}">${isPublic?'Pubblico':'Privato'}</div></div>
@@ -386,8 +393,6 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
         <div class="stat-cell"><div class="stat-label">Ore Registrate</div><div class="stat-value" style="font-size:13px">${totalHours}</div></div>
       </div>
     </div>
-
-    ${discordAgeWarn ? `<div class="ban-alert warn"><div><strong>Nota Discord:</strong> L'account Discord analizzato è stato creato da meno di 2 mesi (${discordCreatedStr}).</div></div>` : ''}
 
     <div class="verdict-card ${verdict.cls}">
       <div class="v-title">${verdict.title}</div>
