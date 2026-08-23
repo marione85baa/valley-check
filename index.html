@@ -145,6 +145,27 @@
   .ban-alert { margin: 0 24px 20px; border-radius: 8px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; font-size: 13px; line-height: 1.6; }
   .ban-alert.warn { background: rgba(232,168,50,0.08); border: 1px solid rgba(232,168,50,0.25); color: #f0c060; }
   
+  /* Animazione e Stile per l'allarme rosso lampeggiante */
+  @keyframes flashRed {
+    0% { background: rgba(232, 64, 64, 0.2); border-color: rgba(232, 64, 64, 0.5); }
+    50% { background: rgba(232, 64, 64, 0.7); border-color: rgba(232, 64, 64, 1); box-shadow: 0 0 20px rgba(232, 64, 64, 0.6); }
+    100% { background: rgba(232, 64, 64, 0.2); border-color: rgba(232, 64, 64, 0.5); }
+  }
+
+  .flash-alert-box {
+    margin: 16px 24px 20px;
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+    animation: flashRed 1.2s infinite ease-in-out;
+    border: 2px solid var(--danger);
+  }
+
   .verdict-card { border-radius: 12px; padding: 26px 24px; text-align: center; }
   .verdict-card.danger { background: rgba(232,64,64,0.08); border: 1px solid rgba(232,64,64,0.3); }
   .verdict-card.warn   { background: rgba(232,168,50,0.07); border: 1px solid rgba(232,168,50,0.28); }
@@ -156,20 +177,8 @@
   .verdict-card .v-desc { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 460px; margin: 0 auto; }
   .valley-stamp { margin-top: 14px; font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--sand); opacity: 0.6; text-transform: uppercase; }
 
-  /* Effetto Lampeggiante Rosso per il Blocco */
-  @keyframes flashRed {
-    0% { background: rgba(232, 64, 64, 0.2); border-color: rgba(232, 64, 64, 0.5); }
-    50% { background: rgba(232, 64, 64, 0.7); border-color: rgba(232, 64, 64, 1); box-shadow: 0 0 20px rgba(232, 64, 64, 0.6); }
-    100% { background: rgba(232, 64, 64, 0.2); border-color: rgba(232, 64, 64, 0.5); }
-  }
-
   .status-msg { font-family: var(--mono); font-size: 13px; color: var(--muted); padding: 28px; text-align: center; background: var(--night2); border: 1px solid var(--border); border-radius: 12px; }
-  .status-msg.error { 
-    color: #fff; 
-    font-weight: bold;
-    animation: flashRed 1.2s infinite ease-in-out;
-    border: 2px solid var(--danger);
-  }
+  .status-msg.error { color: var(--danger); border-color: rgba(232,64,64,0.3); }
 
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -306,13 +315,12 @@ async function doCompleteCheck() {
     
     const steamCreatedDate = p.timecreated ? new Date(p.timecreated * 1000) : null;
 
-    // --- CONTROLLO BLOCCANTE COERENZA ACCOUNT ---
+    let mismatchDetected = false;
     if (steamCreatedDate) {
       const diffDays = (discordDate.getTime() - steamCreatedDate.getTime()) / (1000 * 60 * 60 * 24);
-      
       // Se l'account Discord è recente ma Steam è molto vecchio (gap > 3 anni)
       if (diffDays > 1095) {
-        throw new Error('⚠ ATTENZIONE: Steam molto vecchio ma Discord recente.');
+        mismatchDetected = true;
       }
     }
 
@@ -323,7 +331,7 @@ async function doCompleteCheck() {
       games = gd.response.games || [];
     } catch(e) {}
     
-    renderResults(p, b, games, sid, discordDate, rawDiscord);
+    renderResults(p, b, games, sid, discordDate, rawDiscord, mismatchDetected);
 
   } catch(e) {
     showMsg(e.message, true);
@@ -332,7 +340,7 @@ async function doCompleteCheck() {
   if (btn) btn.disabled = false;
 }
 
-function renderResults(p, b, games, sid, discordDate, discordId) {
+function renderResults(p, b, games, sid, discordDate, discordId, mismatchDetected) {
   const steamCreatedDate = p.timecreated ? new Date(p.timecreated * 1000) : null;
   const steamCreatedStr = steamCreatedDate ? steamCreatedDate.toLocaleDateString('it-IT', {day:'2-digit', month:'long', year:'numeric'}) : 'N/D';
   
@@ -369,14 +377,10 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
   const cfxSearchUrl = `https://forum.cfx.re/search?q=${hexId}`;
   const steamIdIoUrl = `https://steamid.io/lookup/${sid}`;
 
-  const crossCheckHtml = `
-    <div class="cross-check-box" style="border-left: 3px solid var(--ok);">
-      <div><strong>✓ Controllo Incrociato:</strong> Coerenza account OK (nessuna discrepanza critica).</div>
-      <div class="cc-info">Allineato</div>
-    </div>`;
-
   let verdict = { title: 'PROFILO PULITO', desc: 'Nessun ban rilevato e account regolari.', cls: 'ok' };
-  if (hasBan) {
+  if (mismatchDetected) {
+    verdict = { title: 'DISCREPANZA CRITICA', desc: 'Rilevato forte scostamento temporale tra Steam e Discord.', cls: 'danger' };
+  } else if (hasBan) {
     verdict = daysBan < 180 ? { title: 'RISCHIO ALTO', desc: `Ban recente su Steam (${daysBan} giorni fa). Sconsigliato.`, cls: 'danger' } : { title: 'ATTENZIONE', desc: `Ban storico su Steam registrato ${daysBan} giorni fa.`, cls: 'warn' };
   } else if (!isPublic) {
     verdict = { title: 'PROFILO PRIVATO', desc: 'Impossibile verificare ore e storico Steam in modo completo.', cls: 'warn' };
@@ -399,6 +403,8 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
         </div>
       </div>
       
+      ${mismatchDetected ? `<div class="flash-alert-box">⚠ ATTENZIONE: Steam molto vecchio ma Discord recente.</div>` : ''}
+
       <div class="section-title">Anagrafica Piattaforme</div>
       <div class="stat-grid">
         <div class="stat-cell"><div class="stat-label">Steam Creato</div><div class="stat-value" style="font-size:12px">${steamCreatedStr}</div></div>
@@ -406,7 +412,6 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
         <div class="stat-cell"><div class="stat-label">Discord Creato</div><div class="stat-value" style="font-size:12px">${discordCreatedStr}</div></div>
         <div class="stat-cell"><div class="stat-label">Età Discord</div><div class="stat-value ${discordAgeWarn?'warn':''}" style="font-size:13px">${discordAgeText}</div></div>
       </div>
-      ${crossCheckHtml}
     </div>
 
     <div class="card">
@@ -421,7 +426,6 @@ function renderResults(p, b, games, sid, discordDate, discordId) {
           </div>
         </div>
       </div>
-      ${discordAgeWarn ? `<div class="ban-alert warn" style="margin:16px 24px 20px"><div><strong>Attenzione:</strong> L'account Discord è stato creato di recente (${discordCreatedStr}). Verificare la presenza di eventuali account principali.</div></div>` : ''}
     </div>
 
     <div class="card">
