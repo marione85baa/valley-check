@@ -343,15 +343,10 @@
         }
 
         async function fetchSteamApi(targetUrl) {
-            // Sfruttiamo il servizio di allorigins tramite il formato /get?url= che restituisce un JSON strutturato pulito, evitando problemi CORS bloccanti
-            const proxyUrl = `https://api.allorigins.win/get?url=` + encodeURIComponent(targetUrl);
+            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
             const response = await fetch(proxyUrl);
             if (!response.ok) throw new Error(`Errore di comunicazione con il proxy (HTTP ${response.status})`);
-            
-            const data = await response.json();
-            if (!data.contents) throw new Error('Risposta vuota dal server Steam.');
-            
-            return JSON.parse(data.contents);
+            return await response.json();
         }
 
         async function resolveId(raw) {
