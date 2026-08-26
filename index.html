@@ -292,7 +292,6 @@
         <div class="card">
             <div class="form-group">
                 <label>
-                    <!-- Icona Steam SVG Corretta -->
                     <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-9.95 9.14L7.8 13.5a3.5 3.5 0 0 1 2.2-1.07l2.87-4.16a4 4 0 0 1 .13-.57l-3.3-2.42A10 10 0 0 1 12 2m5.75 3.5a2.25 2.25 0 1 0 2.25 2.25 2.25 2.25 0 0 0-2.25-2.25M6.5 13.75A3.25 3.25 0 0 0 9.75 17L12 21.5A9.5 9.5 0 0 0 21.5 12a9.5 9.5 0 0 0-9.21-9.5l-3.2 4.47a3.25 3.25 0 0 0-2.59 6.78Z"/></svg>
                     SteamID64 / FiveM HEX / Profilo
                 </label>
@@ -301,7 +300,6 @@
 
             <div class="form-group">
                 <label>
-                    <!-- Icona Discord SVG -->
                     <svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
                     ID Discord Utente
                 </label>
@@ -344,6 +342,14 @@
             showMsg(text, false);
         }
 
+        async function fetchSteamApi(targetUrl) {
+            // Utilizziamo corsproxy.io che è molto più stabile per le API JSON
+            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error(`Errore di comunicazione con i server Steam (HTTP ${response.status})`);
+            return await response.json();
+        }
+
         async function resolveId(raw) {
             raw = raw.trim();
             if (/^\d{17}$/.test(raw)) return raw;
@@ -354,12 +360,9 @@
             const vanity = m ? m[1] : raw;
             
             const targetUrl = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${API_KEY}&vanityurl=${encodeURIComponent(vanity)}&format=json`;
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+            const d = await fetchSteamApi(targetUrl);
             
-            const r = await fetch(proxyUrl);
-            const d = await r.json();
-            
-            if (!d.response || d.response.success !== 1) throw new Error('Profilo Steam non trovato.');
+            if (!d.response || d.response.success !== 1) throw new Error('Profilo Steam non trovato o Vanity URL non valido.');
             return d.response.steamid;
         }
 
@@ -391,13 +394,10 @@
                 const urlSum = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${API_KEY}&steamids=${sid}&format=json`;
                 const urlBan = `https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${API_KEY}&steamids=${sid}&format=json`;
 
-                const [sumRes, banRes] = await Promise.all([
-                    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlSum)}`),
-                    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlBan)}`)
+                const [sumData, banData] = await Promise.all([
+                    fetchSteamApi(urlSum),
+                    fetchSteamApi(urlBan)
                 ]);
-                
-                const sumData = await sumRes.json();
-                const banData = await banRes.json();
                 
                 const p = sumData.response.players[0];
                 const b = banData.players[0];
@@ -420,8 +420,7 @@
                 let games = null;
                 try {
                     const urlGames = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${API_KEY}&steamid=${sid}&include_appinfo=1&include_played_free_games=1&format=json`;
-                    const gdRes = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlGames)}`);
-                    const gd = await gdRes.json();
+                    const gd = await fetchSteamApi(urlGames);
                     games = gd.response.games || [];
                 } catch(e) {}
                 
