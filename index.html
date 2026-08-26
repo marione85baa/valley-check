@@ -343,8 +343,8 @@
         }
 
         async function fetchSteamApi(targetUrl) {
-            // Utilizziamo corsproxy.io che è molto più stabile per le API JSON
-            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
+            // Utilizziamo CodeTabs come proxy CORS alternativo e stabile
+            const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=` + encodeURIComponent(targetUrl);
             const response = await fetch(proxyUrl);
             if (!response.ok) throw new Error(`Errore di comunicazione con i server Steam (HTTP ${response.status})`);
             return await response.json();
