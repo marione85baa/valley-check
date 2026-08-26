@@ -95,6 +95,15 @@
             font-weight: 600;
         }
 
+        label a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        label a:hover {
+            text-decoration: underline;
+        }
+
         input {
             width: 100%;
             padding: 12px 15px;
@@ -259,7 +268,7 @@
         <!-- Configurazione API Key -->
         <div class="card">
             <div class="form-group" style="margin-bottom: 0;">
-                <label>Configurazione Iniziale: Inserisci la tua Steam Web API Key</label>
+                <label>Configurazione Iniziale: Inserisci la tua Steam Web API Key (<a href="https://steamcommunity.com/dev/apikey" target="_blank">ottienila qui</a>)</label>
                 <div style="display: flex; gap: 10px;">
                     <input type="password" id="apiKeyInput" placeholder="Inserisci Steam Web API Key..." style="flex: 1;">
                     <button class="btn btn-small" onclick="saveApiKey()">Salva</button>
