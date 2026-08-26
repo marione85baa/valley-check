@@ -1,89 +1,468 @@
-async function resolveId(raw) {
-  raw = raw.trim();
-  if (/^\d{17}$/.test(raw)) return raw;
-  if (/^1100001[0-9a-f]{8}$/i.test(raw)) return BigInt('0x' + raw).toString();
-  let m = raw.match(/profiles\/(\d{17})/);
-  if (m) return m[1];
-  m = raw.match(/id\/([^\/\?]+)/);
-  const vanity = m ? m[1] : raw;
-  
-  const targetUrl = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${API_KEY}&vanityurl=${encodeURIComponent(vanity)}&format=json`;
-  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-  
-  const r = await fetch(proxyUrl);
-  const d = await r.json();
-  
-  if (!d.response || d.response.success !== 1) throw new Error('Profilo Steam non trovato.');
-  return d.response.steamid;
-}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valley RP - Staff Security Console</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #131b2e;
+            --accent-color: #e0a838;
+            --accent-hover: #f0b848;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #1f293d;
+        }
 
-async function doCompleteCheck() {
-  const rawSteam = document.getElementById('steamInput').value.trim();
-  const rawDiscord = document.getElementById('discordInput').value.trim();
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-  if (!rawSteam || !rawDiscord) {
-    showMsg('⚠ Compila entrambi i campi (Steam e Discord) per procedere.', true);
-    return;
-  }
-  if (!API_KEY) {
-    showMsg('⚠ Inserisci prima la tua Steam Web API Key.', true);
-    return;
-  }
-  if (!/^\d{17,19}$/.test(rawDiscord)) {
-    showMsg('⚠ ID Discord non valido (deve contenere tra 17 e 19 cifre).', true);
-    return;
-  }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 15px;
+        }
 
-  const btn = document.getElementById('searchBtn');
-  if (btn) btn.disabled = true;
+        .container {
+            width: 100%;
+            max-width: 650px;
+        }
 
-  try {
-    showLoading('Analisi profili e controllo incrociato in corso…');
-    
-    const sid = await resolveId(rawSteam);
-    
-    const urlSum = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${API_KEY}&steamids=${sid}&format=json`;
-    const urlBan = `https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${API_KEY}&steamids=${sid}&format=json`;
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-    const [sumRes, banRes] = await Promise.all([
-      fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlSum)}`),
-      fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlBan)}`)
-    ]);
-    
-    const sumData = await sumRes.json();
-    const banData = await banRes.json();
-    
-    const p = sumData.response.players[0];
-    const b = banData.players[0];
-    if (!p) throw new Error('Profilo Steam non trovato o API Key non valida.');
+        .logo {
+            width: 90px;
+            height: 90px;
+            background: #1a233a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 15px rgba(224, 168, 56, 0.2);
+        }
 
-    const DISCORD_EPOCH = 1420070400000n;
-    const discordTimestamp = Number((BigInt(rawDiscord) >> 22n) + DISCORD_EPOCH);
-    const discordDate = new Date(discordTimestamp);
-    
-    const steamCreatedDate = p.timecreated ? new Date(p.timecreated * 1000) : null;
+        .logo span {
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
 
-    let mismatchDetected = false;
-    if (steamCreatedDate) {
-      const diffDays = Math.abs(discordDate.getTime() - steamCreatedDate.getTime()) / (1000 * 60 * 60 * 24);
-      if (diffDays > 1095) {
-        mismatchDetected = true;
-      }
-    }
+        h1 {
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
 
-    let games = null;
-    try {
-      const urlGames = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${API_KEY}&steamid=${sid}&include_appinfo=1&include_played_free_games=1&format=json`;
-      const gdRes = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlGames)}`);
-      const gd = await gdRes.json();
-      games = gd.response.games || [];
-    } catch(e) {}
-    
-    renderResults(p, b, games, sid, discordDate, rawDiscord, mismatchDetected);
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
 
-  } catch(e) {
-    showMsg(e.message, true);
-  }
+        .card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
 
-  if (btn) btn.disabled = false;
-}
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #0b0f19;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-color);
+            color: #0b0f19;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.99);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            width: auto;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        #resultArea {
+            margin-top: 20px;
+        }
+
+        .msg-box {
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .msg-error {
+            background-color: rgba(232, 64, 64, 0.15);
+            border: 1px solid rgba(232, 64, 64, 0.4);
+            color: #ff6b6b;
+        }
+
+        .msg-loading {
+            background-color: rgba(224, 168, 56, 0.1);
+            border: 1px solid rgba(224, 168, 56, 0.3);
+            color: var(--accent-color);
+        }
+
+        .result-card {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .result-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+        }
+
+        .result-title h3 {
+            font-size: 1.1rem;
+            margin-bottom: 3px;
+        }
+
+        .result-title span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            background: #131b2e;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .info-item span {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-bottom: 3px;
+        }
+
+        .verdict {
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .verdict.clean {
+            background: rgba(78, 201, 123, 0.15);
+            border: 1px solid rgba(78, 201, 123, 0.4);
+            color: #4ec97b;
+        }
+
+        .verdict.warning {
+            background: rgba(232, 168, 50, 0.15);
+            border: 1px solid rgba(232, 168, 50, 0.4);
+            color: #e8a832;
+        }
+
+        .verdict.danger {
+            background: rgba(232, 64, 64, 0.15);
+            border: 1px solid rgba(232, 64, 64, 0.4);
+            color: #e84040;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span>VALLEY</span>
+            </div>
+            <h1>STAFF SECURITY CONSOLE</h1>
+            <p class="subtitle">Strumento unificato di controllo incrociato e analisi profili per lo staff.</p>
+        </header>
+
+        <!-- Configurazione API Key -->
+        <div class="card">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Configurazione Iniziale: Inserisci la tua Steam Web API Key</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="password" id="apiKeyInput" placeholder="Inserisci Steam Web API Key..." style="flex: 1;">
+                    <button class="btn btn-small" onclick="saveApiKey()">Salva</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form di Ricerca -->
+        <div class="card">
+            <div class="form-group">
+                <label>SteamID64 / FiveM HEX / Profilo</label>
+                <input type="text" id="steamInput" placeholder="es. https://steamcommunity.com/id/... oppure HEX">
+            </div>
+
+            <div class="form-group">
+                <label>ID Discord Utente</label>
+                <input type="text" id="discordInput" placeholder="es. 17-19 cifre (es. 29384758934857)">
+            </div>
+
+            <button class="btn" id="searchBtn" onclick="doCompleteCheck()">AVVIA ANALISI COMPLETA</button>
+        </div>
+
+        <!-- Area Risultati -->
+        <div id="resultArea"></div>
+    </div>
+
+    <script>
+        let API_KEY = localStorage.getItem('valley_steam_api_key') || '';
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            if (API_KEY) {
+                document.getElementById('apiKeyInput').value = API_KEY;
+            }
+        });
+
+        function saveApiKey() {
+            const val = document.getElementById('apiKeyInput').value.trim();
+            if (!val) {
+                alert('Inserisci una chiave valida.');
+                return;
+            }
+            API_KEY = val;
+            localStorage.setItem('valley_steam_api_key', API_KEY);
+            alert('API Key salvata con successo!');
+        }
+
+        function showMsg(text, isError = false) {
+            const area = document.getElementById('resultArea');
+            area.innerHTML = `<div class="msg-box ${isError ? 'msg-error' : 'msg-loading'}">${text}</div>`;
+        }
+
+        function showLoading(text) {
+            showMsg(text, false);
+        }
+
+        async function resolveId(raw) {
+            raw = raw.trim();
+            if (/^\d{17}$/.test(raw)) return raw;
+            if (/^1100001[0-9a-f]{8}$/i.test(raw)) return BigInt('0x' + raw).toString();
+            let m = raw.match(/profiles\/(\d{17})/);
+            if (m) return m[1];
+            m = raw.match(/id\/([^\/\?]+)/);
+            const vanity = m ? m[1] : raw;
+            
+            const targetUrl = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${API_KEY}&vanityurl=${encodeURIComponent(vanity)}&format=json`;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+            
+            const r = await fetch(proxyUrl);
+            const d = await r.json();
+            
+            if (!d.response || d.response.success !== 1) throw new Error('Profilo Steam non trovato.');
+            return d.response.steamid;
+        }
+
+        async function doCompleteCheck() {
+            const rawSteam = document.getElementById('steamInput').value.trim();
+            const rawDiscord = document.getElementById('discordInput').value.trim();
+
+            if (!rawSteam || !rawDiscord) {
+                showMsg('⚠ Compila entrambi i campi (Steam e Discord) per procedere.', true);
+                return;
+            }
+            if (!API_KEY) {
+                showMsg('⚠ Inserisci prima la tua Steam Web API Key.', true);
+                return;
+            }
+            if (!/^\d{17,19}$/.test(rawDiscord)) {
+                showMsg('⚠ ID Discord non valido (deve contenere tra 17 e 19 cifre).', true);
+                return;
+            }
+
+            const btn = document.getElementById('searchBtn');
+            if (btn) btn.disabled = true;
+
+            try {
+                showLoading('Analisi profili e controllo incrociato in corso…');
+                
+                const sid = await resolveId(rawSteam);
+                
+                const urlSum = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${API_KEY}&steamids=${sid}&format=json`;
+                const urlBan = `https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${API_KEY}&steamids=${sid}&format=json`;
+
+                const [sumRes, banRes] = await Promise.all([
+                    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlSum)}`),
+                    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlBan)}`)
+                ]);
+                
+                const sumData = await sumRes.json();
+                const banData = await banRes.json();
+                
+                const p = sumData.response.players[0];
+                const b = banData.players[0];
+                if (!p) throw new Error('Profilo Steam non trovato o API Key non valida.');
+
+                const DISCORD_EPOCH = 1420070400000n;
+                const discordTimestamp = Number((BigInt(rawDiscord) >> 22n) + DISCORD_EPOCH);
+                const discordDate = new Date(discordTimestamp);
+                
+                const steamCreatedDate = p.timecreated ? new Date(p.timecreated * 1000) : null;
+
+                let mismatchDetected = false;
+                if (steamCreatedDate) {
+                    const diffDays = Math.abs(discordDate.getTime() - steamCreatedDate.getTime()) / (1000 * 60 * 60 * 24);
+                    if (diffDays > 1095) {
+                        mismatchDetected = true;
+                    }
+                }
+
+                let games = null;
+                try {
+                    const urlGames = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${API_KEY}&steamid=${sid}&include_appinfo=1&include_played_free_games=1&format=json`;
+                    const gdRes = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlGames)}`);
+                    const gd = await gdRes.json();
+                    games = gd.response.games || [];
+                } catch(e) {}
+                
+                renderResults(p, b, games, sid, discordDate, rawDiscord, mismatchDetected);
+
+            } catch(e) {
+                showMsg(e.message, true);
+            }
+
+            if (btn) btn.disabled = false;
+        }
+
+        function renderResults(p, b, games, sid, discordDate, rawDiscord, mismatchDetected) {
+            const area = document.getElementById('resultArea');
+            
+            const steamDateStr = p.timecreated ? new Date(p.timecreated * 1000).toLocaleDateString('it-IT') : 'N/D';
+            const discordDateStr = discordDate.toLocaleDateString('it-IT');
+            const hexId = BigInt(sid).toString(16);
+            
+            let totalHours = 'N/D';
+            if (games) {
+                const totalMins = games.reduce((acc, g) => acc + g.playtime_forever, 0);
+                totalHours = Math.round(totalMins / 60).toLocaleString('it-IT') + ' ore';
+            }
+
+            const hasBan = b.VACBanned || b.NumberOfGameBans > 0;
+            let verdictClass = 'clean';
+            let verdictText = 'Profilo regolare e pulito.';
+
+            if (hasBan) {
+                verdictClass = 'danger';
+                verdictText = `⚠ ATTENZIONE: Trovati ban su Steam (VAC: ${b.VACBanned ? 'Sì' : 'No'}, Game Bans: ${b.NumberOfGameBans})`;
+            } else if (mismatchDetected) {
+                verdictClass = 'warning';
+                verdictText = '⚠ ATTENZIONE: Notevole differenza temporale tra la creazione di Steam e Discord.';
+            }
+
+            area.innerHTML = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <img src="${p.avatarmedium}" alt="Avatar" class="result-avatar">
+                        <div class="result-title">
+                            <h3>${p.personaname}</h3>
+                            <span>SteamID: ${sid}</span>
+                        </div>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span>CREAZIONE STEAM</span>
+                            <strong>${steamDateStr}</strong>
+                        </div>
+                        <div class="info-item">
+                            <span>CREAZIONE DISCORD</span>
+                            <strong>${discordDateStr}</strong>
+                        </div>
+                        <div class="info-item">
+                            <span>HEX FIVE-M</span>
+                            <strong style="font-size:0.75rem; word-break:break-all;">${hexId}</strong>
+                        </div>
+                        <div class="info-item">
+                            <span>ORE DI GIOCO TOT</span>
+                            <strong>${totalHours}</strong>
+                        </div>
+                    </div>
+                    <div class="verdict ${verdictClass}">
+                        ${verdictText}
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
