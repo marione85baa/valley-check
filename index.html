@@ -342,12 +342,22 @@
             showMsg(text, false);
         }
 
-        async function fetchSteamApi(targetUrl) {
-            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
-            const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error(`Errore di comunicazione con il proxy (HTTP ${response.status})`);
-            return await response.json();
+async function fetchSteamApi(targetUrl) {
+    // Usiamo un proxy alternativo basato su CodeTabs con codifica pulita
+    const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=` + encodeURIComponent(targetUrl);
+    
+    const response = await fetch(proxyUrl, {
+        headers: {
+            'Accept': 'application/json'
         }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Errore di comunicazione con il server (HTTP ${response.status})`);
+    }
+
+    return await response.json();
+}
 
         async function resolveId(raw) {
             raw = raw.trim();
