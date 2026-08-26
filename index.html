@@ -45,6 +45,7 @@
         .logo {
             width: 90px;
             height: 90px;
+            background: #1a233a;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -52,7 +53,13 @@
             margin: 0 auto 15px;
             border: 2px solid var(--accent-color);
             box-shadow: 0 0 15px rgba(224, 168, 56, 0.2);
-            object-fit: cover;
+        }
+
+        .logo span {
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
         }
 
         h1 {
@@ -252,8 +259,9 @@
 
     <div class="container">
         <header>
-            <!-- Inserisci qui il link o il nome del file immagine del tuo logo Valley -->
-            <img src="logo.png" alt="Valley Logo" class="logo" onerror="this.style.display='none'">
+            <div class="logo">
+                <span>VALLEY</span>
+            </div>
             <h1>STAFF SECURITY CONSOLE</h1>
             <p class="subtitle">Strumento unificato di controllo incrociato e analisi profili per lo staff.</p>
         </header>
